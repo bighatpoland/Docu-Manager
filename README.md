@@ -1,4 +1,4 @@
-# APplus DMS Prototype
+# DMS Prototype
 
 Welcome to a totally calm and definitely-not-overambitious **single-page Document Management System prototype**.
 
@@ -20,7 +20,7 @@ Built for the timeless business dream: _“Can we just upload everything, secure
 
 ## Why it exists
 
-To quickly validate APplus → DMS workflows before anyone commits to enterprise-grade consequences.
+To quickly validate FA.RT → DMS workflows before anyone commits to enterprise-grade consequences.
 
 ## Status
 
