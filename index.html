@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APplus DMS • Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      content: ["./**/*.html"],
+      theme: {
+        extend: {
+          backdropBlur: { xs: '2px' }
+        }
+      }
+    }
+  </script>
+  <style>
+    .glass { 
+      background: rgba(255,255,255,0.08); 
+      backdrop-filter: blur(20px); 
+      border: 1px solid rgba(255,255,255,0.15); 
+    }
+    .glass-dark { 
+      background: rgba(0,0,0,0.45); 
+      backdrop-filter: blur(20px); 
+      border: 1px solid rgba(255,255,255,0.1); 
+    }
+    .modal-glass {
+      background: rgba(0,0,0,0.75); 
+      backdrop-filter: blur(24px); 
+    }
+  </style>
+</head>
+<body class="h-full bg-zinc-950 text-zinc-100 overflow-hidden">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <div id="sidebar" class="w-64 glass-dark flex-shrink-0 overflow-y-auto"></div>
+    
+    <!-- Main area -->
+    <div class="flex-1 flex flex-col">
+      <!-- Topbar -->
+      <div id="topbar" class="h-14 glass border-b border-white/10 flex items-center px-6 justify-between"></div>
+      
+      <!-- Content -->
+      <div id="main-content" class="flex-1 overflow-auto p-8"></div>
+    </div>
+  </div>
+
+  <!-- All modals injected here -->
+  <div id="modal-container"></div>
+
+  <script>
+    // ====================== APplus DMS PROTOTYPE - FINAL CLEAN main.js ======================
+    // Paste this entire file into main.js → save → refresh Live Server
+
+    let documents = [];
+    let currentPage = 'dashboard';     // 'dashboard' or 'documents'
+    let currentViewMode = 'grid';      // 'grid' or 'list'
+    let filters = { search: '', type: '', activeTags: [] };
+
+    const currentUser = "Maria López";
+
+    // ====================== STORAGE ======================
+    function saveToLocalStorage() {
+      localStorage.setItem('applusDMS_docs', JSON.stringify(documents));
+    }
+
+    function loadDocuments() {
+      const saved = localStorage.getItem('applusDMS_docs');
+      if (saved) {
+        documents = JSON.parse(saved);
+      } else {
+        // FULL MOCK DATA (10 realistic docs)
+        documents = [
+          {"id":"DOC-20250115-001","title":"Invoice_SUPP-XYZ_Jan2025.pdf","type":"Invoice","linkedApplus":"Invoice #INV-250101","status":"Approved","uploadDate":"2025-01-15","uploadedBy":"Maria López","fileSize":"3.8","description":"Monthly supplier invoice for raw materials batch A-47","tags":["supplier-xyz","urgent","q1","finance"],"versions":[{"version":1,"date":"2025-01-15","size":"3.8 MB"}],"auditTrail":["2025-01-15 14:22 – Uploaded by Maria López","2025-01-16 09:10 – Approved by QA Manager"]},
+          {"id":"DOC-20250120-002","title":"Production_Order_PO-47892.pdf","type":"Production Order","linkedApplus":"Production Order #PO-47892","status":"Pending","uploadDate":"2025-01-20","uploadedBy":"Maria López","fileSize":"1.2","description":"Order for 500 units of brake discs – line 3","tags":["production","line-3","brake-discs"],"versions":[{"version":1,"date":"2025-01-20","size":"1.2 MB"},{"version":2,"date":"2025-01-21","size":"1.3 MB"}],"auditTrail":["2025-01-20 10:05 – Uploaded by Maria López","2025-01-21 08:30 – New version uploaded"]},
+          {"id":"DOC-20250122-003","title":"Invoice_SUPP-ABC_Feb2025.pdf","type":"Invoice","linkedApplus":"Invoice #INV-250202","status":"Approved","uploadDate":"2025-01-22","uploadedBy":"Maria López","fileSize":"4.1","description":"","tags":["supplier-abc","q1"],"versions":[{"version":1,"date":"2025-01-22","size":"4.1 MB"}],"auditTrail":["2025-01-22 16:45 – Uploaded","2025-01-23 11:20 – Approved"]},
+          {"id":"DOC-20250125-004","title":"Production_Order_PO-47915.pdf","type":"Production Order","linkedApplus":"Production Order #PO-47915","status":"Rejected","uploadDate":"2025-01-25","uploadedBy":"Maria López","fileSize":"0.9","description":"Urgent order for 200 gearbox housings","tags":["urgent","gearbox","line-2"],"versions":[{"version":1,"date":"2025-01-25","size":"0.9 MB"}],"auditTrail":["2025-01-25 09:15 – Uploaded","2025-01-25 14:30 – Rejected by Production"]},
+          {"id":"DOC-20250128-005","title":"Invoice_SUPP-DEF_Jan2025.pdf","type":"Invoice","linkedApplus":"Invoice #INV-250128","status":"Pending","uploadDate":"2025-01-28","uploadedBy":"Maria López","fileSize":"2.7","description":"Spare parts delivery invoice","tags":["supplier-def","spare-parts"],"versions":[{"version":1,"date":"2025-01-28","size":"2.7 MB"},{"version":2,"date":"2025-01-29","size":"2.8 MB"},{"version":3,"date":"2025-01-30","size":"2.8 MB"}],"auditTrail":["2025-01-28 13:10 – Uploaded","2025-01-29 10:00 – New version","2025-01-30 08:45 – New version"]},
+          {"id":"DOC-20250201-006","title":"Production_Order_PO-47988.pdf","type":"Production Order","linkedApplus":"Production Order #PO-47988","status":"Approved","uploadDate":"2025-02-01","uploadedBy":"Maria López","fileSize":"1.5","description":"Order for 1200 sensor housings","tags":["production","sensor","q1"],"versions":[{"version":1,"date":"2025-02-01","size":"1.5 MB"}],"auditTrail":["2025-02-01 11:20 – Uploaded","2025-02-02 07:55 – Approved"]},
+          {"id":"DOC-20250203-007","title":"Invoice_SUPP-XYZ_Feb2025.pdf","type":"Invoice","linkedApplus":"Invoice #INV-250203","status":"Approved","uploadDate":"2025-02-03","uploadedBy":"Maria López","fileSize":"5.2","description":"Large batch raw steel invoice","tags":["supplier-xyz","raw-material"],"versions":[{"version":1,"date":"2025-02-03","size":"5.2 MB"}],"auditTrail":["2025-02-03 15:30 – Uploaded","2025-02-04 09:15 – Approved"]},
+          {"id":"DOC-20250205-008","title":"Production_Order_PO-48012.pdf","type":"Production Order","linkedApplus":"Production Order #PO-48012","status":"Pending","uploadDate":"2025-02-05","uploadedBy":"Maria López","fileSize":"2.1","description":"","tags":["line-1","urgent"],"versions":[{"version":1,"date":"2025-02-05","size":"2.1 MB"}],"auditTrail":["2025-02-05 08:40 – Uploaded"]},
+          {"id":"DOC-20250210-009","title":"Invoice_SUPP-ABC_Feb2025.pdf","type":"Invoice","linkedApplus":"Invoice #INV-250210","status":"Approved","uploadDate":"2025-02-10","uploadedBy":"Maria López","fileSize":"3.4","description":"Maintenance service invoice","tags":["supplier-abc","maintenance"],"versions":[{"version":1,"date":"2025-02-10","size":"3.4 MB"}],"auditTrail":["2025-02-10 12:00 – Uploaded","2025-02-11 10:30 – Approved"]},
+          {"id":"DOC-20250212-010","title":"Production_Order_PO-48045.pdf","type":"Production Order","linkedApplus":"Production Order #PO-48045","status":"Approved","uploadDate":"2025-02-12","uploadedBy":"Maria López","fileSize":"0.8","description":"Small test batch for new product","tags":["test","new-product","line-3"],"versions":[{"version":1,"date":"2025-02-12","size":"0.8 MB"},{"version":2,"date":"2025-02-13","size":"0.9 MB"}],"auditTrail":["2025-02-12 14:15 – Uploaded","2025-02-13 09:20 – New version uploaded","2025-02-13 16:45 – Approved"]}
+        ];
+        saveToLocalStorage();
+      }
+    }
+
+    // ====================== FILTERS ======================
+    function getFilteredDocuments() {
+      return documents.filter(doc => {
+        const matchesSearch = !filters.search || 
+          doc.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+          (doc.description && doc.description.toLowerCase().includes(filters.search.toLowerCase()));
+        
+        const matchesType = !filters.type || doc.type === filters.type;
+        
+        const matchesTags = filters.activeTags.length === 0 || 
+          filters.activeTags.every(tag => doc.tags.includes(tag));
+        
+        return matchesSearch && matchesType && matchesTags;
+      });
+    }
+
+    function getAllUniqueTags() {
+      const tagSet = new Set();
+      documents.forEach(doc => doc.tags.forEach(tag => tagSet.add(tag)));
+      return Array.from(tagSet).sort();
+    }
+
+    // ====================== RENDER HELPERS ======================
+    function renderSidebar() {
+      const html = `
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-10">
+            <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">A</div>
+            <div>
+              <div class="font-semibold text-xl tracking-tight">APplus DMS</div>
+              <div class="text-xs text-zinc-400 -mt-1">Prototype</div>
+            </div>
+          </div>
+          
+          <nav class="space-y-1">
+            <button onclick="switchPage('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 transition-all ${currentPage === 'dashboard' ? 'bg-white/10 text-white' : 'text-zinc-400'}">
+              <i class="fa-solid fa-house w-5"></i>
+              <span class="font-medium">Dashboard</span>
+            </button>
+            <button onclick="switchPage('documents')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 transition-all ${currentPage === 'documents' ? 'bg-white/10 text-white' : 'text-zinc-400'}">
+              <i class="fa-solid fa-folder w-5"></i>
+              <span class="font-medium">Documents</span>
+            </button>
+          </nav>
+
+          <div class="mt-12 px-4">
+            <button onclick="showUploadModal()" 
+                    class="w-full bg-white text-zinc-950 hover:bg-zinc-200 font-semibold py-3.5 rounded-3xl flex items-center justify-center gap-2 transition-all">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              Upload
+            </button>
+          </div>
+        </div>
+      `;
+      document.getElementById('sidebar').innerHTML = html;
+    }
+
+    function renderTopbar() {
+      const html = `
+        <div class="flex-1 flex items-center gap-6">
+          <div class="flex-1 max-w-md">
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-zinc-400"></i>
+              <input id="search-input" 
+                     onkeyup="handleSearch(this.value)" 
+                     value="${filters.search}"
+                     type="text" 
+                     placeholder="Search documents..." 
+                     class="w-full bg-white/10 border border-white/20 focus:border-blue-500 pl-11 py-3 rounded-3xl text-sm outline-none">
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-6">
+          <div onclick="showUploadModal()" class="cursor-pointer text-zinc-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-right">
+              <div class="font-medium text-sm">${currentUser}</div>
+              <div class="text-[10px] text-emerald-400">Online</div>
+            </div>
+            <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center font-semibold">ML</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('topbar').innerHTML = html;
+    }
+
+    function renderDashboard() {
+      const total = documents.length;
+      const invoices = documents.filter(d => d.type === 'Invoice').length;
+      const prodOrders = documents.filter(d => d.type === 'Production Order').length;
+      const pending = documents.filter(d => d.status === 'Pending').length;
+
+      const recent = [...documents].sort((a,b) => b.uploadDate.localeCompare(a.uploadDate)).slice(0,5);
+
+      let html = `
+        <h1 class="text-4xl font-semibold mb-8">Welcome back, Maria</h1>
+        
+        <div class="grid grid-cols-4 gap-6">
+          <div class="glass rounded-3xl p-6">
+            <div class="text-sm text-zinc-400">Total Documents</div>
+            <div class="text-5xl font-semibold mt-3">${total}</div>
+          </div>
+          <div class="glass rounded-3xl p-6">
+            <div class="text-sm text-zinc-400">Invoices</div>
+            <div class="text-5xl font-semibold mt-3">${invoices}</div>
+          </div>
+          <div class="glass rounded-3xl p-6">
+            <div class="text-sm text-zinc-400">Production Orders</div>
+            <div class="text-5xl font-semibold mt-3">${prodOrders}</div>
+          </div>
+          <div class="glass rounded-3xl p-6 border border-amber-400/30">
+            <div class="text-sm text-amber-400">Pending Approval</div>
+            <div class="text-5xl font-semibold mt-3">${pending}</div>
+          </div>
+        </div>
+
+        <div class="mt-12">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold">Recent Activity</h2>
+            <button onclick="switchPage('documents')" class="text-blue-400 hover:underline text-sm">View all →</button>
+          </div>
+          <div class="glass rounded-3xl overflow-hidden">
+            ${recent.map(doc => `
+              <div onclick="showDocumentModal('${doc.id}')" class="px-6 py-4 hover:bg-white/5 border-b border-white/10 last:border-none flex items-center gap-4 cursor-pointer">
+                <i class="fa-solid fa-file-lines text-2xl text-blue-400"></i>
+                <div class="flex-1">
+                  <div class="font-medium">${doc.title}</div>
+                  <div class="text-xs text-zinc-400">${doc.linkedApplus} • ${doc.uploadDate}</div>
+                </div>
+                <div class="text-xs px-3 py-1 rounded-full ${doc.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400' : doc.status === 'Pending' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}">
+                  ${doc.status}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      document.getElementById('main-content').innerHTML = html;
+    }
+
+    function renderDocuments() {
+      const filtered = getFilteredDocuments();
+      const allTags = getAllUniqueTags();
+
+      let viewHTML = '';
+      if (currentViewMode === 'grid') {
+        viewHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            ${filtered.map(doc => `
+              <div onclick="showDocumentModal('${doc.id}')" class="glass rounded-3xl p-5 cursor-pointer hover:scale-[1.02] transition-all">
+                <div class="h-48 bg-zinc-900 rounded-2xl flex items-center justify-center mb-4 overflow-hidden">
+                  <i class="fa-solid fa-file-pdf text-7xl text-red-400/70"></i>
+                </div>
+                <div class="font-medium line-clamp-2">${doc.title}</div>
+                <div class="text-xs text-zinc-400 mt-1">${doc.linkedApplus}</div>
+                <div class="flex gap-2 mt-4 flex-wrap">
+                  ${doc.tags.slice(0,3).map(tag => `<span class="text-[10px] px-2 py-0.5 bg-white/10 rounded-lg">${tag}</span>`).join('')}
+                </div>
+                <div class="flex justify-between text-xs mt-6 pt-4 border-t border-white/10">
+                  <span>${doc.uploadDate}</span>
+                  <span class="${doc.status === 'Approved' ? 'text-emerald-400' : doc.status === 'Pending' ? 'text-amber-400' : 'text-red-400'}">${doc.status}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        viewHTML = `
+          <div class="glass rounded-3xl overflow-hidden">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-white/10">
+                  <th class="text-left p-6">Document</th>
+                  <th class="text-left p-6">Type</th>
+                  <th class="text-left p-6">APplus Link</th>
+                  <th class="text-left p-6">Status</th>
+                  <th class="text-left p-6">Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filtered.map(doc => `
+                  <tr onclick="showDocumentModal('${doc.id}')" class="border-b border-white/10 hover:bg-white/5 cursor-pointer">
+                    <td class="p-6 font-medium">${doc.title}</td>
+                    <td class="p-6">${doc.type}</td>
+                    <td class="p-6 text-blue-400">${doc.linkedApplus}</td>
+                    <td class="p-6">
+                      <span class="px-3 py-1 text-xs rounded-full ${doc.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400' : doc.status === 'Pending' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}">
+                        ${doc.status}
+                      </span>
+                    </td>
+                    <td class="p-6 text-xs text-zinc-400">${doc.uploadDate}</td>
+                    <td class="p-6 text-right"><i class="fa-solid fa-chevron-right text-zinc-400"></i></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      const html = `
+        <div class="flex justify-between items-center mb-8">
+          <h1 class="text-3xl font-semibold">All Documents (${filtered.length})</h1>
+          
+          <div class="flex items-center gap-4">
+            <select onchange="filterByType(this.value)" class="bg-white/10 border border-white/20 rounded-2xl px-5 py-3 text-sm outline-none">
+              <option value="">All Types</option>
+              <option value="Invoice" ${filters.type==='Invoice'?'selected':''}>Invoice</option>
+              <option value="Production Order" ${filters.type==='Production Order'?'selected':''}>Production Order</option>
+            </select>
+
+            <div class="flex border border-white/20 rounded-3xl overflow-hidden">
+              <button onclick="setViewMode('grid')" class="px-5 py-3 ${currentViewMode==='grid' ? 'bg-white text-zinc-950' : 'hover:bg-white/10'}"><i class="fa-solid fa-grid-2"></i></button>
+              <button onclick="setViewMode('list')" class="px-5 py-3 ${currentViewMode==='list' ? 'bg-white text-zinc-950' : 'hover:bg-white/10'}"><i class="fa-solid fa-list"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tag filters -->
+        <div class="flex flex-wrap gap-2 mb-8">
+          ${allTags.map(tag => `
+            <button onclick="toggleTagFilter('${tag}')" 
+                    class="px-4 py-1.5 text-xs rounded-3xl transition-all ${filters.activeTags.includes(tag) ? 'bg-blue-500 text-white' : 'glass hover:bg-white/10'}">
+              #${tag}
+            </button>
+          `).join('')}
+        </div>
+
+        ${viewHTML}
+      `;
+      document.getElementById('main-content').innerHTML = html;
+    }
+
+    // ====================== PAGE SWITCH ======================
+    function switchPage(page) {
+      currentPage = page;
+      filters = { search: '', type: '', activeTags: [] }; // reset filters when switching
+      renderAll();
+    }
+
+    function renderAll() {
+      renderSidebar();
+      renderTopbar();
+      if (currentPage === 'dashboard') {
+        renderDashboard();
+      } else {
+        renderDocuments();
+      }
+    }
+
+    // ====================== FILTER HANDLERS ======================
+    function handleSearch(value) {
+      filters.search = value;
+      renderDocuments();
+    }
+
+    function filterByType(value) {
+      filters.type = value;
+      renderDocuments();
+    }
+
+    function toggleTagFilter(tag) {
+      if (filters.activeTags.includes(tag)) {
+        filters.activeTags = filters.activeTags.filter(t => t !== tag);
+      } else {
+        filters.activeTags.push(tag);
+      }
+      renderDocuments();
+    }
+
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      renderDocuments();
+    }
+
+    // ====================== UPLOAD MODAL ======================
+    let tempNewVersionOf = null;   // set when uploading new version from doc modal
+
+    function showUploadModal(isNewVersion = false) {
+      tempNewVersionOf = isNewVersion ? isNewVersion : null;
+
+      const title = isNewVersion ? 'Upload New Version' : 'Upload Documents';
+      const html = `
+        <div class="fixed inset-0 z-50 flex items-center justify-center modal-glass">
+          <div class="glass w-full max-w-2xl mx-4 rounded-3xl overflow-hidden">
+            <div class="px-8 py-6 border-b border-white/10 flex justify-between items-center">
+              <h2 class="text-2xl font-semibold">${title}</h2>
+              <button onclick="closeModal()" class="text-3xl leading-none text-zinc-400 hover:text-white">×</button>
+            </div>
+            
+            <div id="drop-zone" 
+                 class="border-2 border-dashed border-white/30 m-8 rounded-3xl h-64 flex flex-col items-center justify-center hover:border-blue-500 transition-colors cursor-pointer">
+              <i class="fa-solid fa-cloud-arrow-up text-6xl mb-4 text-zinc-400"></i>
+              <div class="text-lg font-medium">Drop files here or</div>
+              <label class="mt-3 bg-white text-zinc-950 px-8 py-3 rounded-3xl font-semibold cursor-pointer hover:bg-zinc-100">
+                Browse files
+                <input type="file" id="file-input" multiple class="hidden" onchange="handleFileSelect(event)">
+              </label>
+              <div class="text-xs text-zinc-500 mt-6">Any file type • Max 100 MB each</div>
+            </div>
+
+            <div id="upload-file-list" class="mx-8 mb-8 max-h-60 overflow-auto"></div>
+
+            <div class="p-8 border-t border-white/10 flex justify-end gap-4">
+              <button onclick="closeModal()" class="px-8 py-3 text-zinc-400 hover:text-white">Cancel</button>
+              <button onclick="processUpload()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-3xl font-semibold">Upload</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('modal-container').innerHTML = html;
+
+      // Drag & drop setup
+      const dropZone = document.getElementById('drop-zone');
+      dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-blue-500'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-500'));
+      dropZone.addEventListener('drop', handleDrop);
+    }
+
+    let pendingFiles = [];
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const dropZone = document.getElementById('drop-zone');
+      dropZone.classList.remove('border-blue-500');
+      processDroppedFiles(e.dataTransfer.files);
+    }
+
+    function handleFileSelect(e) {
+      processDroppedFiles(e.target.files);
+    }
+
+    function processDroppedFiles(fileList) {
+      pendingFiles = Array.from(fileList);
+      renderUploadFileList();
+    }
+
+    function renderUploadFileList() {
+      const container = document.getElementById('upload-file-list');
+      if (!container) return;
+
+      let html = '<div class="space-y-3">';
+      pendingFiles.forEach((file, i) => {
+        const sizeMB = (file.size / (1024*1024)).toFixed(1);
+        if (sizeMB > 100) {
+          html += `<div class="flex items-center gap-3 text-red-400"><i class="fa-solid fa-triangle-exclamation"></i> ${file.name} – too big (${sizeMB} MB)</div>`;
+        } else {
+          html += `
+            <div class="flex items-center justify-between bg-white/5 rounded-2xl px-5 py-3">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-file text-xl"></i>
+                <div>
+                  <div class="text-sm">${file.name}</div>
+                  <div class="text-xs text-zinc-400">${sizeMB} MB</div>
+                </div>
+              </div>
+              <button onclick="removePendingFile(${i})" class="text-red-400 hover:text-red-500">Remove</button>
+            </div>
+          `;
+        }
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function removePendingFile(index) {
+      pendingFiles.splice(index, 1);
+      renderUploadFileList();
+    }
+
+    function processUpload() {
+      if (pendingFiles.length === 0) {
+        alert("No files selected");
+        return;
+      }
+
+      pendingFiles.forEach(file => {
+        const sizeMB = (file.size / (1024*1024)).toFixed(1);
+        if (sizeMB > 100) return;
+
+        const newDoc = {
+          id: "DOC-" + Date.now().toString().slice(-8),
+          title: file.name,
+          type: Math.random() > 0.5 ? "Invoice" : "Production Order",
+          linkedApplus: Math.random() > 0.5 ? `Invoice #INV-${Math.floor(Math.random()*900000)}` : `Production Order #PO-${Math.floor(Math.random()*900000)}`,
+          status: "Pending",
+          uploadDate: new Date().toISOString().slice(0,10),
+          uploadedBy: currentUser,
+          fileSize: sizeMB,
+          description: "",
+          tags: [],
+          versions: [{version: 1, date: new Date().toISOString().slice(0,10), size: sizeMB + " MB"}],
+          auditTrail: [`${new Date().toISOString().slice(0,16).replace('T',' ')} – Uploaded by ${currentUser}`]
+        };
+
+        if (tempNewVersionOf) {
+          const existing = documents.find(d => d.id === tempNewVersionOf);
+          if (existing) {
+            newDoc.id = existing.id; // keep same ID for version
+            newDoc.title = existing.title;
+            newDoc.type = existing.type;
+            newDoc.linkedApplus = existing.linkedApplus;
+            newDoc.versions = [...existing.versions, {version: existing.versions.length + 1, date: new Date().toISOString().slice(0,10), size: sizeMB + " MB"}];
+            newDoc.auditTrail.push(`${new Date().toISOString().slice(0,16).replace('T',' ')} – New version uploaded`);
+            Object.assign(existing, newDoc);
+            return;
+          }
+        }
+
+        documents.unshift(newDoc); // newest first
+      });
+
+      saveToLocalStorage();
+      closeModal();
+      renderAll();
+      alert(`${pendingFiles.length} file(s) uploaded successfully!`);
+      pendingFiles = [];
+      tempNewVersionOf = null;
+    }
+
+    // ====================== DOCUMENT MODAL ======================
+    function showDocumentModal(docId) {
+      const doc = documents.find(d => d.id === docId);
+      if (!doc) return;
+
+      const html = `
+        <div class="fixed inset-0 z-50 flex items-center justify-center modal-glass">
+          <div class="glass w-full max-w-5xl mx-4 rounded-3xl h-[92vh] flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="px-8 py-6 border-b border-white/10 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <i class="fa-solid fa-file-pdf text-4xl text-red-400"></i>
+                <div>
+                  <div class="font-semibold text-xl">${doc.title}</div>
+                  <div class="text-xs text-zinc-400">${doc.linkedApplus}</div>
+                </div>
+              </div>
+              <button onclick="closeModal()" class="text-4xl leading-none text-zinc-400 hover:text-white">×</button>
+            </div>
+
+            <div class="flex flex-1 overflow-hidden">
+              <!-- Preview pane -->
+              <div class="w-2/5 bg-zinc-900 flex items-center justify-center p-12 border-r border-white/10">
+                <div class="text-center">
+                  <i class="fa-solid fa-file-pdf text-[180px] text-red-400/30"></i>
+                  <div class="mt-8 text-zinc-400">Document preview (simulated)</div>
+                  <div class="text-xs text-zinc-500 mt-1">${doc.title}</div>
+                </div>
+              </div>
+
+              <!-- Content pane -->
+              <div class="flex-1 flex flex-col overflow-hidden">
+                <div class="flex border-b border-white/10">
+                  <button onclick="switchDocTab(this, 'info')" class="tab-button active px-8 py-5 border-b-2 border-blue-500 text-blue-400 font-medium">Info</button>
+                  <button onclick="switchDocTab(this, 'edit')" class="tab-button px-8 py-5 text-zinc-400 hover:text-white">Edit</button>
+                  <button onclick="switchDocTab(this, 'versions')" class="tab-button px-8 py-5 text-zinc-400 hover:text-white">Versions</button>
+                  <button onclick="switchDocTab(this, 'audit')" class="tab-button px-8 py-5 text-zinc-400 hover:text-white">Audit Trail</button>
+                </div>
+
+                <!-- Info tab -->
+                <div id="tab-info" class="tab-content flex-1 p-8 overflow-auto">
+                  <div class="flex gap-8">
+                    <div class="flex-1">
+                      <div class="text-xs uppercase tracking-widest text-zinc-400 mb-1">Status</div>
+                      <div class="inline-flex items-center gap-2 bg-white/10 px-6 py-2 rounded-3xl">
+                        <span class="${doc.status === 'Approved' ? 'text-emerald-400' : doc.status === 'Pending' ? 'text-amber-400' : 'text-red-400'} font-semibold">${doc.status}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <button onclick="changeStatus('${doc.id}', 'Approved')" class="px-6 py-2 text-xs bg-emerald-600 hover:bg-emerald-500 rounded-2xl">Approve</button>
+                      <button onclick="changeStatus('${doc.id}', 'Pending')" class="px-6 py-2 text-xs bg-amber-600 hover:bg-amber-500 rounded-2xl ml-2">Mark Pending</button>
+                      <button onclick="changeStatus('${doc.id}', 'Rejected')" class="px-6 py-2 text-xs bg-red-600 hover:bg-red-500 rounded-2xl ml-2">Reject</button>
+                    </div>
+                  </div>
+
+                  <div class="mt-10">
+                    <div class="text-xs uppercase tracking-widest text-zinc-400 mb-2">APplus Link</div>
+                    <button onclick="alert('Opening ${doc.linkedApplus} in APplus (simulated)')" 
+                            class="text-blue-400 hover:underline">${doc.linkedApplus} →</button>
+                  </div>
+
+                  <button onclick="uploadNewVersion('${doc.id}')" 
+                          class="mt-12 w-full py-4 border border-dashed border-white/30 rounded-3xl hover:border-blue-500 flex items-center justify-center gap-3 text-blue-400">
+                    <i class="fa-solid fa-plus"></i>
+                    Upload new version of this document
+                  </button>
+                </div>
+
+                <!-- Edit tab -->
+                <div id="tab-edit" class="tab-content hidden flex-1 p-8 overflow-auto">
+                  <label class="block text-xs uppercase tracking-widest text-zinc-400 mb-2">Description</label>
+                  <textarea id="edit-description" class="w-full h-32 bg-white/10 border border-white/20 rounded-3xl p-5 resize-none" placeholder="Add description...">${doc.description || ''}</textarea>
+                  
+                  <div class="mt-8">
+                    <div class="flex justify-between text-xs uppercase tracking-widest text-zinc-400 mb-3">
+                      <span>Tags (${doc.tags.length}/20)</span>
+                      <span class="text-blue-400 cursor-pointer" onclick="addNewTag('${doc.id}')">+ Add tag</span>
+                    </div>
+                    <div id="tag-pills" class="flex flex-wrap gap-2">
+                      ${doc.tags.map((tag,i) => `
+                        <div class="bg-white/10 px-4 py-1 rounded-3xl flex items-center gap-2 text-sm">
+                          ${tag}
+                          <span onclick="removeTag('${doc.id}', ${i}); event.stopImmediatePropagation()" class="text-red-400 cursor-pointer hover:text-red-300">×</span>
+                        </div>
+                      `).join('')}
+                    </div>
+                    <input id="new-tag-input" type="text" placeholder="New tag (max 20)" 
+                           class="mt-4 w-full bg-white/10 border border-white/20 rounded-3xl px-5 py-3 text-sm outline-none" onkeypress="if(event.key==='Enter') addNewTag('${doc.id}')">
+                  </div>
+
+                  <button onclick="saveEdit('${doc.id}')" 
+                          class="mt-12 bg-white text-zinc-950 w-full py-4 rounded-3xl font-semibold">Save changes</button>
+                </div>
+
+                <!-- Versions tab -->
+                <div id="tab-versions" class="tab-content hidden flex-1 p-8 overflow-auto">
+                  <div class="space-y-6">
+                    ${doc.versions.slice().reverse().map(v => `
+                      <div class="flex gap-6 items-center">
+                        <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl">v${v.version}</div>
+                        <div class="flex-1">
+                          <div class="font-medium">Version ${v.version}</div>
+                          <div class="text-xs text-zinc-400">${v.date} • ${v.size}</div>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Audit tab -->
+                <div id="tab-audit" class="tab-content hidden flex-1 p-8 overflow-auto">
+                  <div class="space-y-4 text-sm">
+                    ${doc.auditTrail.map(entry => `
+                      <div class="pl-6 border-l border-white/20">${entry}</div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modal-container').innerHTML = html;
+      // default to info tab
+      switchDocTab(null, 'info');
+    }
+
+    function switchDocTab(el, tab) {
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active', 'border-b-2', 'border-blue-500', 'text-blue-400'));
+      if (el) el.classList.add('active', 'border-b-2', 'border-blue-500', 'text-blue-400');
+      
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+    }
+
+    function changeStatus(docId, newStatus) {
+      const doc = documents.find(d => d.id === docId);
+      if (doc) {
+        doc.status = newStatus;
+        doc.auditTrail.unshift(`${new Date().toISOString().slice(0,16).replace('T',' ')} – Status changed to ${newStatus} by ${currentUser}`);
+        saveToLocalStorage();
+        showDocumentModal(docId); // refresh modal
+        renderAll();
+      }
+    }
+
+    function saveEdit(docId) {
+      const doc = documents.find(d => d.id === docId);
+      if (!doc) return;
+      doc.description = document.getElementById('edit-description').value.trim();
+      saveToLocalStorage();
+      alert("Changes saved!");
+      renderAll();
+    }
+
+    function addNewTag(docId) {
+      const input = document.getElementById('new-tag-input');
+      if (!input) return;
+      const tag = input.value.trim();
+      if (!tag) return;
+
+      const doc = documents.find(d => d.id === docId);
+      if (doc && doc.tags.length < 20 && !doc.tags.includes(tag)) {
+        doc.tags.push(tag);
+        saveToLocalStorage();
+        showDocumentModal(docId); // refresh
+      } else if (doc.tags.length >= 20) {
+        alert("Maximum 20 tags allowed");
+      }
+      input.value = '';
+    }
+
+    function removeTag(docId, index) {
+      const doc = documents.find(d => d.id === docId);
+      if (doc) {
+        doc.tags.splice(index, 1);
+        saveToLocalStorage();
+        showDocumentModal(docId);
+      }
+    }
+
+    function uploadNewVersion(docId) {
+      closeModal();
+      setTimeout(() => {
+        showUploadModal(docId);
+      }, 300);
+    }
+
+    // ====================== UTILITIES ======================
+    function closeModal() {
+      document.getElementById('modal-container').innerHTML = '';
+      pendingFiles = [];
+      tempNewVersionOf = null;
+    }
+
+    // ====================== INIT ======================
+    loadDocuments();
+    renderAll();
+
+    // Expose some functions to window so onclick works
+    window.switchPage = switchPage;
+    window.showUploadModal = showUploadModal;
+    window.showDocumentModal = showDocumentModal;
+    window.setViewMode = setViewMode;
+    window.filterByType = filterByType;
+    window.toggleTagFilter = toggleTagFilter;
+    window.handleSearch = handleSearch;
+    window.changeStatus = changeStatus;
+    window.saveEdit = saveEdit;
+    window.addNewTag = addNewTag;
+    window.removeTag = removeTag;
+    window.uploadNewVersion = uploadNewVersion;
+    window.closeModal = closeModal;
+    window.handleFileSelect = handleFileSelect;
+    window.processUpload = processUpload;
+    window.removePendingFile = removePendingFile;
+  </script>
+</body>
+</html>
