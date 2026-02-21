@@ -1,21 +1,36 @@
-# Agent Skills (Project)
+Welcome to the sacred vault of project-specific agent wisdom for Docu-Manager.
+Yes, this folder. The one we’ll definitely keep organized. Absolutely. Probably.
 
-This folder stores project-specific agent skills for **Docu-Manager**.
+Suggested Structure (a.k.a. “Things We Pretend We’ll Maintain”)
 
-## Suggested structure
+dms-ui.md — Where we argue about buttons, spacing, and why this shade of gray is “strategic.”
 
-- `dms-ui.md` — UI conventions, component rules, and styling choices
-- `data-model.md` — document schema, field meanings, and validation rules
-- `workflows.md` — common flows (upload, review, approval, archive)
-- `release-checklist.md` — pre-release checks and manual QA
+data-model.md — The sacred scroll of document schema, mysterious field meanings, and validation rules nobody reads until production breaks.
 
-## How to use
+workflows.md — The heroic journey of a document: upload → review → approval → archive → existential crisis.
 
-1. Add one markdown file per skill area.
-2. Keep skills short and actionable.
-3. Update after every meaningful change.
+release-checklist.md — A ritual performed before release to summon stability (results not guaranteed).
 
-## Reminder
+debug-checklist/ — A structured panic-management system for when builds fail, tests cry, or runtime decides to freestyle.
 
-- [ ] Add your first real skill note here.
-- [ ] Review and expand this folder later this week.
+refactor-helper/ — “We’re not changing behavior.”
+(We are absolutely changing everything. But gently.)
+
+How to Use (In Theory)
+
+Add one markdown file per skill area. One. Singular. Not “final_v3_REAL.md”.
+
+Keep skills short and actionable. If it requires a philosophy degree, it’s too long.
+
+Update after every meaningful change.
+(Yes, that includes “small refactor, no impact.” It always has impact.)
+
+For operational skills, use folder-based skills (<skill>/SKILL.md + optional agents/openai.yaml) because we are professionals.
+
+Reminder (Aspirational)
+
+ Add your first real skill note here.
+
+ Review and expand this folder later this week.
+
+“Later this week” is a flexible concept.
