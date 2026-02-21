@@ -5,7 +5,7 @@ description: Use this when the user’s request is underspecified. Ask the minim
 
 ## Workflow
 1) Restate the goal in one sentence.
-2) Ask up to 3 clarifying questions that unblock implementation.
+2) Ask clarifying questions that unblock implementation.
 3) If user says “assume defaults”, list the assumptions and proceed.
 
 ## Guardrails
