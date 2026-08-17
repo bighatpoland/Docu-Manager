@@ -1,39 +1,151 @@
 # Docu Manager Prototype
 
-Welcome to a totally calm and definitely-not-overambitious **single-page Document Management System prototype**.
+A document management prototype — dashboard, document library, versioning, audit
+trail — **built with the [BigHat design system](https://github.com/bighatpoland/bighat-design-system)**.
 
-Built for the timeless business dream: _“Can we just upload everything, secure everything, classify everything, and make it look easy?”_
-https://document-management-kanban.vercel.app 
+Live demo: https://document-management-kanban.vercel.app
 
-## What this thing does
+The point of this repository is not the document management. It is what a real
+screen looks like when every control comes from a design system, and what happens
+at the places where the system runs out.
 
-- Gives users a dashboard and document library so they can feel productive.
-- Lets admins manage metadata-based permission rules so chaos is at least policy-driven.
-- Includes dossier plan management, because plain folders were apparently too mainstream.
-- Supports import/export of dossier plans for DEV/TEST/PROD, so your environments can all be equally confusing in sync.
+## Built with @bighatpoland/ui
 
-## Tech stack (aka “it’s a prototype, relax”)
+Every interactive control on every screen is a component from
+[`@bighatpoland/ui`](https://github.com/bighatpoland/bighat-design-system) —
+[Storybook](https://bighatpoland.github.io/bighat-design-system/). Nothing is
+restyled, wrapped, or forked.
 
-- Plain HTML + JavaScript
-- Tailwind via CDN
-- Font Awesome icons
-- Browser `localStorage` as a tiny fake backend with big dreams
+```json
+"dependencies": {
+  "@bighatpoland/ui": "github:bighatpoland/bighat-design-system"
+}
+```
 
-## Why it exists
+Setup is three lines, once, in [main.tsx](src/main.tsx):
 
-To validate document workflows quickly — upload, classify, version, approve — before anyone commits to enterprise-grade consequences.
+```tsx
+import '@bighatpoland/ui/styles.css';
 
-## Status
+<div className="bh-root">
+  <ToastProvider>
+    <App />
+  </ToastProvider>
+</div>;
+```
 
-Prototype. Works. Opinionated. Slightly dramatic.
+### The rules this codebase holds itself to
+
+The design system ships its own rules for consumers in
+[`agent/SKILL.md`](https://github.com/bighatpoland/bighat-design-system/blob/main/agent/SKILL.md).
+The ones with teeth here:
+
+| Rule                                            | How it shows up in this repo                                                                                                       |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Semantic tokens only — never a primitive or a hex | [app.css](src/app.css) contains no colour literal. Every value is a `--bh-*` semantic token or a layout property.                   |
+| Spacing comes from the 4px scale                | Gaps and padding are `--bh-gap-*` / `--bh-padding-*`. There is no `13px` anywhere.                                                  |
+| Empty, loading and error are `StateBlock`        | No bespoke "no results" markup. And "empty" is written twice — see below.                                                           |
+| Colour is never the only carrier of meaning     | Every `Badge` carries its status as text. The `Card` accent on "Pending approval" is decorative; the label does the work.           |
+| Never remove a focus outline                    | Local interactive elements take `bh-focusable`. The one custom ring ([ToggleGroup](src/components/ToggleGroup.tsx)) adds, not replaces. |
+| Labels are required; placeholders are not labels | Every `Input`, `Select` and local `Textarea` has a real label, hidden with `hideLabel` where the layout needs it.                   |
+| Prefer a new component over a new prop          | Six gaps are local components, named as such, listed below. No system component was widened.                                        |
+
+**"Empty" is two screens, and this one writes both.** A library with nothing in
+it offers an upload; a library filtered to nothing offers a way out of the filter
+([Documents.tsx](src/pages/Documents.tsx)). The design system calls conflating
+these its most common mistake, so it seemed worth not making.
+
+### Where each component is used
+
+| Screen element                    | Component                            |
+| --------------------------------- | ------------------------------------ |
+| Page frame, landmarks, skip link  | `AppShell`, `SkipLink`               |
+| Top bar, brand, search            | `AppBar` + `Input`                   |
+| Section navigation                | `SidePanel` + `NavList` / `NavItem`  |
+| Dashboard stat tiles              | `Card` (via local `StatTile`)        |
+| Recent activity rows              | `Card` + `Badge`                     |
+| Document cards                    | `Card` + `Badge`                     |
+| Document table, sorting           | `Table`                              |
+| Document status                   | `Badge`                              |
+| Type filter                       | `Select`                             |
+| Every action                      | `Button`                             |
+| Upload, document detail           | `Dialog`                             |
+| Save, approve, upload confirmation | `Toast` via `useToast()`            |
+| Empty states, oversized-file error | `StateBlock`                         |
+
+## Components the design system is missing
+
+This is the useful output of the exercise. Each one is built locally in
+[src/components/](src/components/) against semantic tokens, marked
+`LOCAL COMPONENT` in its own source, and is a **candidate to move into the design
+system** — the comment in each file explains what the system would have to decide.
+
+| Gap                | Why the system has no answer                                                                          | Priority                                        |
+| ------------------ | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **`Tabs`**         | Nothing comes close. It is a keyboard widget — arrows move, Home/End jump, one tab stop for the group. | **High.** Every hand-rolled version omits this. |
+| **`Textarea`**     | `Input` is single-line by contract; `Composer` is a prompt with a submit handler. Multi-line text has nowhere to go. | **High.** Trivial to add, needed constantly. |
+| **`Chip`**         | `Badge` explicitly refuses to be clickable, correctly. Filter chips and removable tag chips are two different components. | **High.** Two variants, both used here. |
+| **`ToggleGroup`**  | A segmented control is one choice with a current value, so it is a radio group. Rendered as buttons it loses that value. | **Medium.** `Composer` already has this logic internally, unexported. |
+| **`FileDropzone`** | No file input of any kind. The usual `<div onDrop>` is invisible to keyboard and screen reader users.  | **Medium.** Needs a real `<input type="file">` underneath. |
+| **`Avatar`**       | No answer for identity. Small, but every product invents it and half read "ML" aloud.                 | **Low.**                                        |
+
+Two more findings that are not missing components:
+
+- **`Select` has no `hideLabel`, but `Input` does.** An inconsistency rather than
+  a gap. The label is visible in the toolbar here as a result, which is arguably
+  the better default — but the asymmetry should be a decision, not an accident.
+- **`Table` has no row-activation model.** Also right: a clickable row has no
+  accessible name and no keyboard story. But the alternative needs to be stated,
+  or every product invents `onRowClick`. This repo puts an explicit named button
+  in a cell.
+
+`StatTile` is in `src/components/` too but is **not** a gap — it is a local
+composition of the system's `Card`. Worth promoting only if a second product
+wants the same tile.
+
+## Fixed in the design system along the way
+
+Two things this integration surfaced, both fixed upstream:
+
+- The package advertised `types: ./dist/index.d.ts` and never shipped one —
+  `vite-plugin-dts` honoured `noEmit` from the app tsconfig and silently emitted
+  nothing. Every TypeScript consumer was getting an implicit `any`.
+- No `prepare` script, so installing it as a git dependency produced a package
+  with no build output at all.
+
+## Verified
+
+Not claims — these are checked:
+
+- `npm run build` — clean, no type errors against the design system's own types.
+- 15 behavioural flows pass: search, both empty states, tag filtering, tab arrow
+  keys, status changes writing audit entries, tag duplicate guard, toasts,
+  `Escape` closing dialogs, and edits surviving a reload.
+- `axe-core` reports **no WCAG 2.1 A/AA violations** on all five screens in both
+  light and dark themes. Automated checks are a floor, not a ceiling.
+
+## Tech
+
+- React 19 + TypeScript + Vite
+- `@bighatpoland/ui` for every control
+- `localStorage` as a fake backend, with the same shape the original prototype used
+
+The previous version of this prototype was a single 734-line HTML file using
+Tailwind via CDN. The design system is a React component library, so applying it
+properly meant becoming a React app. Restyling the old file with the system's
+tokens would have looked the same and been a copy, not a dependency.
 
 ## Local run
 
-1. Open `index.html` in a browser (or use Live Server).
-2. Click around confidently.
-3. Pretend this was always the plan.
+```bash
+npm install
+npm run dev
+```
 
-## Disclaimer
+`npm install` builds the design system from source, since it is a git dependency
+rather than a published package.
 
-This is **not** production-ready software.
-It is, however, production-ready enthusiasm.
+## Status
+
+Prototype. Not production software. The document management is a plausible
+fiction; the design system integration is the real content.
