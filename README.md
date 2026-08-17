@@ -1,4 +1,4 @@
-# DMS Prototype
+# Docu Manager Prototype
 
 Welcome to a totally calm and definitely-not-overambitious **single-page Document Management System prototype**.
 
