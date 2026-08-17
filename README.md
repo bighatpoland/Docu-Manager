@@ -21,7 +21,7 @@ https://document-management-kanban.vercel.app
 
 ## Why it exists
 
-To quickly validate FA.RT → DMS workflows before anyone commits to enterprise-grade consequences.
+To validate document workflows quickly — upload, classify, version, approve — before anyone commits to enterprise-grade consequences.
 
 ## Status
 
