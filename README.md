@@ -8,6 +8,15 @@ The point of this repository is not the document management. It is what a real
 screen looks like when every control comes from a design system, and what
 happens at the places where the system runs out.
 
+Design work in progress:
+
+- **[First concept](https://claude.ai/code/artifact/8208d568-914c-4547-b608-9c9b347a1f11)** —
+  a queue-first front door over a dossier-first workspace, drawn on the design
+  system.
+- **[Competition audit](https://claude.ai/code/artifact/e8c5130f-940e-4d8e-a6da-a7523a36af3f)** —
+  the same findings as the folder below, illustrated and annotated by
+  requirement.
+
 Three things live here:
 
 - **[requirements/](requirements/)** — 168 functional requirements for a
@@ -107,39 +116,15 @@ rule is generalised in [`FLT-8`](requirements/filter.md).
 
 ## Components the design system is missing
 
-This is the useful output of the exercise. Each one is built locally in
-[src/components/](src/components/) against semantic tokens, marked
-`LOCAL COMPONENT` in its own source, and is a **candidate to move into the
-design system** — the comment in each file explains what the system would have
-to decide.
+The running list lives in **[DESIGN-SYSTEM-GAPS.md](DESIGN-SYSTEM-GAPS.md)** —
+eight open gaps, each filled locally in [src/components/](src/components/),
+marked `LOCAL COMPONENT` in its own source, and each a candidate to move into
+the system. Two of them now have a second occurrence in another product, which
+is the bar this repository set for proposing promotion.
 
-Checked against `@bighatpoland/ui@2.0.0`, whose
-[`components.json`](https://github.com/bighatpoland/bighat-design-system/blob/main/components.json)
-inventories 17 components. None of the six gaps below has an equivalent there.
+That file also records two findings that are not missing components but
+decisions the system should make, and the components left deliberately unused.
 
-| Gap | Why the system has no answer | Priority |
-| --- | ---------------------------- | -------- |
-| **`Tabs`** | Nothing comes close. It is a keyboard widget — arrows move, Home/End jump, one tab stop for the group. | **High.** Every hand-rolled version omits this. |
-| **`Textarea`** | `Input` is single-line by contract; `Composer` is a prompt with a submit handler and declares `notFor: ["Ordinary multi-line form fields"]`. Multi-line text has nowhere to go. | **High.** Trivial to add, needed constantly. |
-| **`Chip`** | `Badge` explicitly refuses to be clickable, correctly. Filter chips and removable tag chips are two different components. | **High.** Two variants, both used here. |
-| **`ToggleGroup`** | A segmented control is one choice with a current value, so it is a radio group. Rendered as buttons it loses that value. | **Medium.** `Composer` already has this logic internally, unexported. |
-| **`FileDropzone`** | No file input of any kind. The usual `<div onDrop>` is invisible to keyboard and screen reader users — see [`UPL-1`](requirements/upload-and-versioning.md). | **Medium.** Needs a real `<input type="file">` underneath. |
-| **`Avatar`** | No answer for identity. Small, but every product invents it and half read "ML" aloud. | **Low.** |
-
-Two more findings that are not missing components:
-
-- **`Select` has no `hideLabel`, but `Input` does.** An inconsistency rather
-  than a gap. The label is visible in the toolbar here as a result, which is
-  arguably the better default — but the asymmetry should be a decision, not an
-  accident.
-- **`Table` has no row-activation model.** Also right: a clickable row has no
-  accessible name and no keyboard story. But the alternative needs to be
-  stated, or every product invents `onRowClick`. This repo puts an explicit
-  named button in a cell.
-
-`StatTile` is in `src/components/` too but is **not** a gap — it is a local
-composition of the system's `Card`. Worth promoting only if a second product
-wants the same tile.
 
 ## Fixed in the design system along the way
 
