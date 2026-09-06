@@ -102,3 +102,27 @@ administrator can edit does not satisfy this requirement.
 Type definitions, controlled lists and permission rules move between
 environments as a diffable file, so that a change can be reviewed before it
 reaches production.
+
+## Filing rules and the file plan
+
+**`DOS-A-20` An administrator defines filing rules that map document metadata to a dossier type and, within it, to a register.**
+A rule states the conditions, the target, and whether it may create a dossier
+that does not yet exist.
+
+**`DOS-A-21` A filing rule shows what it would do before it is enabled.**
+The count of existing documents it would file, and a sample of them. This is
+`DOS-A-4` applied to filing: a rule enabled blind refiles the repository.
+
+**`DOS-A-22` Filing rules are ordered, and the order is explicit.**
+Where two rules match one document, which wins must be a decision, not an
+emergent property of the evaluation order.
+
+**`DOS-A-23` The product supports a file plan: a single organisation-wide classification scheme above dossier types.**
+Dossier types say what one dossier contains; the file plan says how the whole
+repository is organised, and is the instrument for both creating new dossiers in
+the right place and finding existing ones. Without it, a few hundred dossiers is
+an unordered list.
+
+**`DOS-A-24` The file plan is versioned and its changes are auditable, like a dossier type definition.**
+Reclassifying a branch of the plan moves everything under it, so it carries the
+same preview-before-apply obligation as `DOS-A-4`.

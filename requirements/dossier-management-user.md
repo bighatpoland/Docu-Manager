@@ -97,3 +97,25 @@ to in [Documents.tsx](../src/pages/Documents.tsx).
 Filing eight documents where two fail leaves six filed and names the two,
 with the reason for each. It does not roll back the six or report "an error
 occurred".
+
+## Automatic filing
+
+The market's established systems file most documents into dossiers by rule, not
+by hand — an invoice arriving with a supplier number already says where it
+belongs. Manual filing (`DOS-U-8`) is the exception path, not the main one.
+
+**`DOS-U-17` A document is filed into a dossier automatically when its metadata satisfies a filing rule.**
+Where no dossier of the matching type exists, the rule may create one. The rules
+themselves are administered — see `DOS-A-20`.
+
+**`DOS-U-18` A document filed automatically says so, and says which rule filed it.**
+Visible on the document and in the dossier. Automatic filing that cannot be
+explained is indistinguishable from a system that misplaces things.
+
+**`DOS-U-19` An automatic filing can be overridden by a user with permission, and the override is recorded and survives re-evaluation.**
+A corrected filing must not be undone the next time the rules run. Without this,
+the user and the rule engine fight, and the rule engine always wins.
+
+**`DOS-U-20` A document that matches no filing rule is not lost — it is unfiled, and unfiled is a place.**
+A queue with a count, offering the filing action. Documents that match nothing
+are the ones most likely to need a person.
