@@ -1,6 +1,6 @@
 # Agent Skills (Project, Obviously)
 
-Welcome to the sacred vault of project-specific agent wisdom for **Docu-Manager**.  
+Welcome to the sacred vault of project-specific agent wisdom for **DocuManager**.  
 Yes, this folder. The one we’ll definitely keep organized. Absolutely. Probably.
 
 ---

@@ -1,9 +1,9 @@
 ---
 name: design-system
-description: Use this before writing or editing any UI in Docu Manager. This product is built on @bighatpoland/ui; this file says what to reach for, what is deliberately local, and what not to invent.
+description: Use this before writing or editing any UI in DocuManager. This product is built on @bighatpoland/ui; this file says what to reach for, what is deliberately local, and what not to invent.
 ---
 
-# UI in Docu Manager
+# UI in DocuManager
 
 Every control comes from [`@bighatpoland/ui`](https://github.com/bighatpoland/bighat-design-system).
 Load its own rules first — they ship in the package at `agent/SKILL.md` and are
@@ -13,7 +13,7 @@ specific to this product.
 ## Before adding any UI
 
 1. **Check the system first.** `node_modules/@bighatpoland/ui/components.json` is
-   the machine-readable inventory: 16 components, with `purpose` and `notFor` on
+   the machine-readable inventory: 17 components, with `purpose` and `notFor` on
    each. `notFor` is not advice; it is the reason a component will refuse.
 2. **Then check `src/components/`.** Six gaps are already filled locally. Do not
    build a second one.
