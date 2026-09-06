@@ -7,14 +7,18 @@ what actually exists today.
 
 ## Areas
 
-| Area | File |
-| ---- | ---- |
-| Dossier management — user | [dossier-management-user.md](dossier-management-user.md) |
-| Dossier management — admin | [dossier-management-admin.md](dossier-management-admin.md) |
-| Upload and versioning | [upload-and-versioning.md](upload-and-versioning.md) |
-| Bulk download | [bulk-download.md](bulk-download.md) |
-| Filter | [filter.md](filter.md) |
-| Sort | [sort.md](sort.md) |
+| Area | Requirements | File |
+| ---- | ------------ | ---- |
+| Dossier management — user | 20 | [dossier-management-user.md](dossier-management-user.md) |
+| Dossier management — admin | 24 | [dossier-management-admin.md](dossier-management-admin.md) |
+| Permissions and roles | 24 | [permissions-and-roles.md](permissions-and-roles.md) |
+| Upload and versioning | 23 | [upload-and-versioning.md](upload-and-versioning.md) |
+| Bulk download | 16 | [bulk-download.md](bulk-download.md) |
+| Bulk operations | 13 | [bulk-operations.md](bulk-operations.md) |
+| Retention policies | 13 | [retention-policies.md](retention-policies.md) |
+| Filter | 15 | [filter.md](filter.md) |
+| Sort | 14 | [sort.md](sort.md) |
+| Cross-cutting | 6 | this file |
 
 ## How to read a requirement
 
@@ -26,10 +30,14 @@ and is marked withdrawn.
 | ------ | ---- |
 | `DOS-U` | Dossier management, user-facing |
 | `DOS-A` | Dossier management, administration |
+| `PRM` | Permissions, roles and metadata fields |
 | `UPL` | Upload and versioning |
 | `BDL` | Bulk download |
+| `BLK` | Bulk operations and selection |
+| `RET` | Retention policies |
 | `FLT` | Filter |
 | `SRT` | Sort |
+| `XC` | Cross-cutting |
 
 **Must / should / may** carry their RFC 2119 meanings. "Must" is a release gate.
 
@@ -47,6 +55,10 @@ equivalent.
 | **Dossier type** | The template a dossier is created from. Fixes the metadata schema, the folder structure, and the lifecycle rules for every dossier of that type. |
 | **Reference** | A document appearing in a dossier without being copied into it. One stored document, many dossiers. |
 | **Retention** | The period a document or dossier must be kept, and what happens when it expires. |
+| **Content permission rule** | A named rule granting or denying a set of operations to a set of roles, for every document whose metadata satisfies its predicate. Access is decided by metadata, never by storage location. |
+| **Role** | A named group of users, sourced read-only from the organisation's identity provider. |
+| **File plan** | The organisation-wide classification scheme above dossier types — the instrument for filing a new dossier in the right place and finding an existing one. |
+| **Retention policy** | A named, versioned object carrying a period, a start event and a lifecycle state, attached to document types. |
 | **Audit entry** | An append-only record of who did what, when. Never editable, never deletable by any role. |
 
 ## Cross-cutting requirements
@@ -81,3 +93,6 @@ describe considerably more than it does.
 | Sort | Partial — sortable table columns with a single active sort. No secondary sort, no natural sort, no persistence. |
 | Dossier management | Not implemented. No dossier concept exists in the data model. |
 | Bulk download | Not implemented. |
+| Bulk operations | Not implemented. No selection model exists. |
+| Permissions and roles | Not implemented. The prototype has one user and no access control. |
+| Retention policies | Not implemented. |

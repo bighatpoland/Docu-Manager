@@ -100,3 +100,18 @@ transcribes.
 **`UPL-20` Where required metadata is unknown at upload, the document is accepted and flagged incomplete.**
 Blocking the upload loses the file. Flagging it keeps the file and keeps the
 obligation. Incomplete documents are listed as outstanding work.
+
+## Text extraction
+
+**`UPL-21` The content of every uploaded document is extracted to text where the format allows, and scanned images are put through optical character recognition.**
+This is the precondition for `FLT-4`: full-text search that composes with
+facets. It is also what makes `UPL-19` honest — metadata proposed from "dates
+found in the content" requires there to be extracted content to find them in.
+
+**`UPL-22` A document whose text could not be extracted is marked as such, and remains findable by its metadata.**
+Silent failure here produces a document that search cannot reach and nobody
+knows is missing. The mark is visible and the failure is countable.
+
+**`UPL-23` Extraction and recognition run asynchronously and never block the upload.**
+The document is stored and visible first; its text becomes searchable when
+extraction completes. Per `XC-6`.

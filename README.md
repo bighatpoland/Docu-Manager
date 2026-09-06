@@ -8,10 +8,12 @@ The point of this repository is not the document management. It is what a real
 screen looks like when every control comes from a design system, and what
 happens at the places where the system runs out.
 
-Two things live here:
+Three things live here:
 
-- **[requirements/](requirements/)** — 106 functional requirements for a
-  document management system, written against general market practice.
+- **[requirements/](requirements/)** — 168 functional requirements for a
+  document management system.
+- **[Competition audit/](Competition%20audit/)** — what four established DMS
+  products do about those requirements, and what that changed.
 - **[src/](src/)** — a working prototype implementing a slice of them, with
   every control taken from `@bighatpoland/ui`.
 
@@ -23,10 +25,13 @@ checked.
 
 | Area | Requirements | File |
 | ---- | ------------ | ---- |
-| Dossier management — user | 16 | [dossier-management-user.md](requirements/dossier-management-user.md) |
-| Dossier management — admin | 19 | [dossier-management-admin.md](requirements/dossier-management-admin.md) |
-| Upload and versioning | 20 | [upload-and-versioning.md](requirements/upload-and-versioning.md) |
+| Dossier management — user | 20 | [dossier-management-user.md](requirements/dossier-management-user.md) |
+| Dossier management — admin | 24 | [dossier-management-admin.md](requirements/dossier-management-admin.md) |
+| Permissions and roles | 24 | [permissions-and-roles.md](requirements/permissions-and-roles.md) |
+| Upload and versioning | 23 | [upload-and-versioning.md](requirements/upload-and-versioning.md) |
 | Bulk download | 16 | [bulk-download.md](requirements/bulk-download.md) |
+| Bulk operations | 13 | [bulk-operations.md](requirements/bulk-operations.md) |
+| Retention policies | 13 | [retention-policies.md](requirements/retention-policies.md) |
 | Filter | 15 | [filter.md](requirements/filter.md) |
 | Sort | 14 | [sort.md](requirements/sort.md) |
 | Cross-cutting | 6 | [README.md](requirements/README.md) |
