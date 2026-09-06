@@ -15,6 +15,11 @@ Design work in progress:
 - **[Second concept](https://claude.ai/code/artifact/ef77cea0-a9ad-49d9-b660-f8f4a2e4f1c0)** —
   one corpus with saved views as the navigation, and a dossier as a facet rather
   than a container.
+- **[Third concept](https://claude.ai/code/artifact/6e640d25-4cb2-4ad9-a1a5-6a3e9c9962fb)** —
+  the merge, and the current candidate. Concept 1's spine with the inspector,
+  addressable views and the export screen absorbed from concept 2. **Built on
+  the design system's own classes**, so the ratio of `bh-` to `dm-` markup on
+  each screen measures what the system still cannot do.
 - **[Competition audit](https://claude.ai/code/artifact/e8c5130f-940e-4d8e-a6da-a7523a36af3f)** —
   the same findings as the folder below, illustrated and annotated by
   requirement.
