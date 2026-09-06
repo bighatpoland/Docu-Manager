@@ -11,8 +11,10 @@ happens at the places where the system runs out.
 Design work in progress:
 
 - **[First concept](https://claude.ai/code/artifact/8208d568-914c-4547-b608-9c9b347a1f11)** —
-  a queue-first front door over a dossier-first workspace, drawn on the design
-  system.
+  a queue-first front door over a dossier-first workspace.
+- **[Second concept](https://claude.ai/code/artifact/ef77cea0-a9ad-49d9-b660-f8f4a2e4f1c0)** —
+  one corpus with saved views as the navigation, and a dossier as a facet rather
+  than a container.
 - **[Competition audit](https://claude.ai/code/artifact/e8c5130f-940e-4d8e-a6da-a7523a36af3f)** —
   the same findings as the folder below, illustrated and annotated by
   requirement.
