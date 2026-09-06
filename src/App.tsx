@@ -101,7 +101,7 @@ export function App() {
                 <span className="dm-brand__mark" aria-hidden="true">
                   D
                 </span>
-                Docu Manager
+                DocuManager
               </span>
             }
             title={currentScreen}
